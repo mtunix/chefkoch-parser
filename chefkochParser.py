@@ -14,7 +14,7 @@ geometry_options = {
     "bottom": "0.8in",
 }
 
-for url in urls:
+for i, url in enumerate(urls):
     page = urlopen(url)
     parsed = BeautifulSoup(page, 'html.parser')
     ingredientsTable = parsed.find(class_="incredients")
@@ -23,8 +23,7 @@ for url in urls:
     for row in ingredientsTable:
         if isinstance(row, Tag):
             columns = row.find_all('td');
-            i = 0
-            for column in columns:
+            for j, column in enumerate(columns):
                 parsedString = ""
                 if column.a:
                     parsedString = column.a.string.strip().replace("\xa0", " ")
@@ -42,11 +41,10 @@ for url in urls:
                                 parsedString += s
                     else:
                         parsedString = column.get_text().strip().replace("\xa0", " ")
-                if i%2 == 1:
+                if j%2 == 1:
                     ingredientsName.append(parsedString)
                 else:
                     ingredientsAmount.append(parsedString)
-                i += 1
     instructionsHtml = parsed.find(id="rezept-zubereitung").strings
     instructions = ""
     for instructionHtml in instructionsHtml:
@@ -57,14 +55,14 @@ for url in urls:
     pictureResponse = urlopen(pictureUrl)
     picture = pictureResponse.read()
     try:
-        with open("recipes/picture.jpg", "wb+") as f:
+        with open("recipes/picture" + str(i) + ".jpg", "wb+") as f:
             f.write(picture)
     except OSError:
         pass
     doc = Document(geometry_options=geometry_options)
     doc.append(LargeText(bold(recipeTitle)))
     with doc.create(Figure(position="h!")) as pic:
-        pic.add_image("picture.jpg")
+        pic.add_image("picture" + str(i) +".jpg")
 
     doc.append(VerticalSpace("25pt"))
     with doc.create(Section("Zutaten")):
@@ -78,8 +76,10 @@ for url in urls:
     with doc.create(Section("Anweisungen")):
             doc.append(instructions)
 
-    path = "recipes/" + recipeTitle
+    path = "recipes/" + recipeTitle.replace(" ", "")
+    print(path)
     try:
-        doc.generate_pdf(path, compiler_args=["-f", "-interaction=nonstopmode"])
+        #doc.generate_pdf(path, compiler_args=["-f", "-interaction=nonstopmode"])
+        doc.generate_tex(path)
     except Exception:
         pass
