@@ -1,2 +1,6 @@
 *.txt
 *.swp
+*.log
+*.tex
+*.pdf
+*.aux

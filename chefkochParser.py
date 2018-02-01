@@ -1,10 +1,9 @@
 from urllib.request import urlopen
-from bs4 import BeautifulSoup
-from bs4 import NavigableString
-from bs4 import Tag
+from bs4 import BeautifulSoup, NavigableString, Tag
+from pylatex import Document, Section, Subsection, Command, LongTabu
+from pylatex.utils import bold
 import string
 
-urls = []
 with open("urls.txt") as f:
     urls = f.readlines()
 urls = [url.strip() for url in urls]
@@ -51,3 +50,17 @@ for url in urls:
     for instructionHtml in instructionsHtml:
         instructions += instructionHtml
     print(instructions.strip())
+
+doc = Document('Recipe')
+with doc.create(Section("Zutaten")):
+    with doc.create(LongTabu("X[l] X[l]", row_height=1.5)) as ingredientTable:
+        ingredientTable.add_row(["Menge", "Zutat"], mapper=bold, color="lightgray")
+        ingredientTable.add_empty_row()
+        ingredientTable.add_hline()
+        for i in range(len(ingredientsAmount)):
+            row = [ingredientsAmount[i], ingredientsName[i]]
+            ingredientTable.add_row(row)
+with doc.create(Section("Anweisungen")):
+        doc.append(instructions)
+
+doc.generate_pdf("recipe", clean_tex=False)
