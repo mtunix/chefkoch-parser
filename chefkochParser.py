@@ -1,6 +1,6 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup, NavigableString, Tag
-from pylatex import Document, Section, Subsection, Command, LongTabu, MiniPage, LargeText, LineBreak, VerticalSpace, Figure
+from pylatex import Document, Section, Subsection, Command, LongTabu, MiniPage, LargeText, LineBreak, VerticalSpace, Figure, Center
 from pylatex.utils import bold
 import string
 
@@ -60,26 +60,30 @@ for i, url in enumerate(urls):
     except OSError:
         pass
     doc = Document(geometry_options=geometry_options)
-    doc.append(LargeText(bold(recipeTitle)))
-    with doc.create(Figure(position="h!")) as pic:
-        pic.add_image("picture" + str(i) +".jpg")
-
-    doc.append(VerticalSpace("25pt"))
-    with doc.create(Section("Zutaten")):
-        with doc.create(LongTabu("X[l] X[l]", row_height=1.5)) as ingredientTable:
-            ingredientTable.add_row(["Menge", "Zutat"], mapper=bold, color="lightgray")
-            ingredientTable.add_empty_row()
+    doc.add_color("strongRed", "HTML", "f44242")
+    doc.add_color("lightRed", "HTML", "ffc1c1")
+    with doc.create(Center()):
+        doc.append(LargeText(bold(recipeTitle)))
+    doc.append(VerticalSpace("0pt"))
+    with doc.create(Section("Zutaten", False)): 
+        with doc.create(LongTabu("X[l] X[3l]", row_height=1.5)) as ingredientTable:
+            ingredientTable.add_row(["Menge", "Zutat"], mapper=bold, color="strongRed")
             ingredientTable.add_hline()
-            for i in range(len(ingredientsAmount)):
-                row = [ingredientsAmount[i], ingredientsName[i]]
-                ingredientTable.add_row(row)
-    with doc.create(Section("Anweisungen")):
+            for j, ingredientAmount in enumerate(ingredientsAmount):
+                row = [ingredientAmount, ingredientsName[j]]
+                if (j%2) == 0:
+                    ingredientTable.add_row(row, color="lightRed")
+                else:
+                    ingredientTable.add_row(row)
+    doc.append(VerticalSpace("0pt"))
+    with doc.create(Section("Anweisungen", False)):
             doc.append(instructions)
+    with doc.create(Figure(position="b!")) as pic:
+        pic.add_image("picture" + str(i) +".jpg", width="220px")
 
     path = "recipes/" + recipeTitle.replace(" ", "")
-    print(path)
+    print("Created:" + path + ".tex")
     try:
-        #doc.generate_pdf(path, compiler_args=["-f", "-interaction=nonstopmode"])
         doc.generate_tex(path)
     except Exception:
         pass
