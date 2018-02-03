@@ -48,6 +48,7 @@ def generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instruct
         "bottom": "0.8in",
     }
     doc = Document(geometry_options=geometry_options)
+    doc.change_length("\parindent", "0pt")
     doc.add_color("strongRed", "HTML", "f44242")
     doc.add_color("lightRed", "HTML", "ffc1c1")
     with doc.create(Center()):
