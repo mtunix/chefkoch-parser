@@ -8,3 +8,4 @@ recipes/*.tex
 recipes/*.jpg
 recipes/*.aux
 recipes/*.log
+.idea/*
