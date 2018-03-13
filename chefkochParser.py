@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup, Tag
-from pylatex import Document, Section, LongTabu, LargeText, VerticalSpace, Figure, Center
+from pylatex import Document, Section, LongTabu, LargeText, VerticalSpace, Figure, Center, Command
 from pylatex.utils import bold
 from urllib.request import urlopen
 
@@ -54,20 +54,21 @@ def generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instruct
     with doc.create(Center()):
         doc.append(LargeText(bold(recipe_title)))
     doc.append(VerticalSpace("0pt"))
-    with doc.create(Section("Zutaten", False)):
-        with doc.create(LongTabu("X[l] X[3l]", row_height=1.5)) as ingredientTable:
-            ingredientTable.add_row(["Menge", "Zutat"], mapper=bold, color="strongRed")
-            ingredientTable.add_hline()
-            for j, ingredientAmount in enumerate(ingredients_amount):
-                row = [ingredientAmount, ingredients_name[j]]
-                if (j % 2) == 0:
-                    ingredientTable.add_row(row, color="lightRed")
-                else:
-                    ingredientTable.add_row(row)
+    doc.append(Command('small'))
+    with doc.create(LongTabu("X[l] X[3l]", row_height=1.5)) as ingredientTable:
+        ingredientTable.add_row(["Menge", "Zutat"], mapper=bold, color="strongRed")
+        ingredientTable.add_hline()
+        for j, ingredientAmount in enumerate(ingredients_amount):
+            row = [bold(ingredientAmount), bold(ingredients_name[j])]
+            if (j % 2) == 0:
+                ingredientTable.add_row(row, color="lightRed")
+            else:
+                ingredientTable.add_row(row)
     doc.append(VerticalSpace("0pt"))
+    doc.append(Command('large'))
     with doc.create(Section("Anweisungen", False)):
         doc.append(instructions)
-    with doc.create(Figure(position="b!")) as pic:
+    with doc.create(Figure(position="h")) as pic:
         pic.add_image("picture" + str(i) + ".jpg", width="220px")
     path = "recipes/" + recipe_title.replace(" ", "")
     print("Created:" + path + ".tex")
