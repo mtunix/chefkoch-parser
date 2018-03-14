@@ -1,8 +1,8 @@
 from bs4 import BeautifulSoup, Tag
-from pylatex import Document, Section, LongTabu, LargeText, VerticalSpace, Figure, Center, Command
+from pylatex import Document, Section, LongTabu, LargeText, VerticalSpace, Figure, Center, Command, MiniPage, LineBreak
 from pylatex.utils import bold
 from urllib.request import urlopen
-
+from os import linesep
 
 def get_ingredients(parsed):
     ingredients_table = parsed.find(class_="incredients")
@@ -35,11 +35,16 @@ def get_ingredients(parsed):
 
 def get_instructions(parsed):
     instructions_html = parsed.find(id="rezept-zubereitung").strings
-    instructions = ""
+    instruction_string = ""
     for instructionHtml in instructions_html:
-        instructions += instructionHtml
+        instruction_string += instructionHtml
+    instructions_split = instruction_string.split(chr(10))
+    instructions = [x.lstrip() for x in instructions_split if not is_whitespace(x)]
     return instructions
 
+
+def is_whitespace(str):
+    return len(str) == 0 or str.isspace()
 
 def generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instructions):
     geometry_options = {
@@ -67,7 +72,8 @@ def generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instruct
     doc.append(VerticalSpace("0pt"))
     doc.append(Command('large'))
     with doc.create(Section("Anweisungen", False)):
-        doc.append(instructions)
+        for instruction in instructions:
+            doc.append(instruction)
     with doc.create(Figure(position="h")) as pic:
         pic.add_image("picture" + str(i) + ".jpg", width="220px")
     path = "recipes/" + recipe_title.replace(" ", "")
