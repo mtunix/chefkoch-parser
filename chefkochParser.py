@@ -2,7 +2,8 @@ from bs4 import BeautifulSoup, Tag
 from pylatex import Document, Section, LongTabu, LargeText, VerticalSpace, Figure, Center, Command, MiniPage, LineBreak
 from pylatex.utils import bold
 from urllib.request import urlopen
-from os import linesep
+from pathlib import Path
+
 
 def get_ingredients(parsed):
     ingredients_table = parsed.find(class_="incredients")
@@ -46,6 +47,7 @@ def get_instructions(parsed):
 def is_whitespace(str):
     return len(str) == 0 or str.isspace()
 
+
 def generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instructions):
     geometry_options = {
         "head": "30pt",
@@ -84,6 +86,23 @@ def generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instruct
         pass
 
 
+def generate_html(i, recipe_title, ingredients_amount, ingredients_name, instructions):
+    contents = Path("template.html").read_text()
+    parsed = BeautifulSoup(contents, 'html.parser')
+    instructions_div = parsed.select("#instructions")[0]
+    table_body = parsed.select("#ingredients_body")[0]
+    parsed.select("#title")[0].append(recipe_title)
+    parsed.select("#image")[0].append(BeautifulSoup("<img width=\"100%\" src=\"picture" + str(i) + ".jpg\">", "html.parser"))
+    for j, ingredient_amount in enumerate(ingredients_amount):
+        table_body.append(BeautifulSoup("<tr><td>" + ingredient_amount
+                                        + "</td><td>" + ingredients_name[j] + "</td></tr>", "html.parser"))
+    for instruction in instructions:
+        instructions_div.append(BeautifulSoup("<p>" + instruction + "</p>", "html.parser"))
+
+    file = open("recipes/recipe" + str(i) + ".html", "w")
+    file.write(parsed.prettify())
+
+
 def little_do_it_all():
     with open("urls.txt") as f:
         urls = f.readlines()
@@ -104,6 +123,7 @@ def little_do_it_all():
         except OSError:
             print("Error trying to write picture to filesystem.")
         generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instructions)
+        generate_html(i, recipe_title, ingredients_amount, ingredients_name, instructions)
 
 
 little_do_it_all()

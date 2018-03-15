@@ -4,6 +4,7 @@
 *.tex
 *.pdf
 *.aux
+recipes/*
 recipes/*.tex
 recipes/*.jpg
 recipes/*.aux
