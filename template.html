@@ -1,0 +1,81 @@
+<html>
+	<head>
+		<style>
+			body {
+				padding: 1em 2em;
+				font-size: 22px;
+				-webkit-print-color-adjust: exact;
+			}
+			th {
+				padding: 4px 0px 4px 5px;
+				text-align: left;
+				background-color: #F03434;
+				color: white;
+				border-bottom: 1px solid grey;
+			}
+			td {
+				padding: 2px 0px 2px 5px;
+			}
+			p {
+				margin: 0 0 1em 0;
+			}
+			table {
+				width: 100%;
+				border: 1px solid grey;
+				margin: 1em 0;
+				font-size: 22px;
+			}
+			tr:nth-child(odd) {
+    			background: #FFF;
+			}
+			tr:nth-child(even) {
+    			background: #edb1b1;
+			}
+			img {
+				border: 1px solid grey;
+			}
+			.main {
+				width: 100%;
+				padding: 0 1em;
+			}
+			.aside-1 {
+				width: 40%;
+				float: right;
+				padding: 0 0 0 1em;
+			}
+			.instructions {
+				width: 60%;
+			}
+			#image {
+				width: 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<center>
+			<h2 id="title"></h2>
+		</center>
+		<div class="wrapper">
+			<div class="aside-1">
+				<center>
+				<div id="image">
+				</div>
+				<div>
+				<table id="ingredients">
+					<tr>
+						<th>Menge</th>
+						<th>Zutat</th>
+					</tr>
+					<tbody id="ingredients_body">
+
+					</tbody>
+				</table>
+			</div>
+		</center>
+			</div>
+			<div id="instructions">
+
+			</div>
+		</div>
+	</body>
+</html>
