@@ -99,7 +99,7 @@ def generate_html(i, recipe_title, ingredients_amount, ingredients_name, instruc
     for instruction in instructions:
         instructions_div.append(BeautifulSoup("<p>" + instruction + "</p>", "html.parser"))
 
-    file = open("recipes/recipe" + str(i) + ".html", "w")
+    file = open("recipes/" + recipe_title + ".html", "w")
     file.write(parsed.prettify())
 
 
