@@ -2,14 +2,16 @@
 	<head>
 		<style>
 			body {
-				padding: 1em 2em;
 				font-size: 22px;
 				-webkit-print-color-adjust: exact;
+			}
+			h2 {
+				margin: 0;
 			}
 			th {
 				padding: 4px 0px 4px 5px;
 				text-align: left;
-				background-color: #F03434;
+				background-color: #F44336;
 				color: white;
 				border-bottom: 1px solid grey;
 			}
@@ -23,13 +25,13 @@
 				width: 100%;
 				border: 1px solid grey;
 				margin: 1em 0;
-				font-size: 22px;
+				font-size: 18px;
 			}
 			tr:nth-child(odd) {
     			background: #FFF;
 			}
 			tr:nth-child(even) {
-    			background: #edb1b1;
+    			background: #E57373;
 			}
 			img {
 				border: 1px solid grey;
@@ -49,12 +51,28 @@
 			#image {
 				width: 100%;
 			}
+			#titleBar {
+				width: 100%;
+				margin: 10px 0 2em 0;
+				padding: 0;
+				height: 5px;
+				background: #F44336;
+			}
+			.wrapper {
+				padding: 0 3em 2em 3em;
+			}
+			#header {
+				width: 91%;
+				margin: 0 0 0 10%;
+				padding: 2em 0 0 0;
+			}
 		</style>
 	</head>
 	<body>
-		<center>
+		<div id="header">
 			<h2 id="title"></h2>
-		</center>
+			<div id="titleBar"></div>
+		</div>
 		<div class="wrapper">
 			<div class="aside-1">
 				<center>
