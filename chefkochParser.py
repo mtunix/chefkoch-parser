@@ -37,6 +37,7 @@ def get_ingredients(parsed):
 
 
 def get_instructions(parsed):
+
     dom = etree.HTML(str(parsed))
     instruction_html = dom.xpath('/html/body/main/article[4]/div[1]')[0]
     instruction_string = ""
@@ -110,6 +111,8 @@ def generate_html(i, recipe_title, ingredients_amount, ingredients_name, instruc
 def generate_md(i, recipe_title, ingredients_amount, ingredients_name, instructions):
     with open(os.path.join('recipes', f'{recipe_title.replace(" ","_")}.md'), 'w') as f:
         content = f'# {recipe_title}\n\n'
+        pic = "picture" + str(i) + ".jpg"
+        content = f'![{recipe_title} - Picture]({pic} "Example Picture - ")\n\n'
 
         content += '## Ingredients\n'
         content += '| Menge | Zutat |\n'
@@ -125,7 +128,6 @@ def generate_md(i, recipe_title, ingredients_amount, ingredients_name, instructi
         f.write(content)
 
 
-
 def little_do_it_all():
     with open("urls.txt") as f:
         urls = f.readlines()
@@ -137,17 +139,19 @@ def little_do_it_all():
         ingredients_amount, ingredients_name = get_ingredients(parsed)
         instructions = get_instructions(parsed)
         recipe_title = parsed.find("title").string
-        # TODO: fix pictures
-        #picture_url = parsed.find(class_="slideshow-image").attrs['src']
-        #picture_response = urlopen(picture_url)
-        #picture = picture_response.read()
-        #try:
-        #    with open("recipes/picture" + str(i) + ".jpg", "wb+") as f:
-        #        f.write(picture)
-        #except OSError:
-        #    print("Error trying to write picture to filesystem.")
-        generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instructions)
-        generate_html(i, recipe_title, ingredients_amount, ingredients_name, instructions)
+        # TODO: FIX PICTURES
+        import sys
+        dom = etree.HTML(str(parsed))
+        picture_url = dom.xpath('//*[@id="i-amp-0"]/img/@src')[0]
+        picture_response = urlopen(picture_url)
+        picture = picture_response.read()
+        try:
+            with open("recipes/picture" + str(i) + ".jpg", "wb+") as f:
+                f.write(picture)
+        except OSError:
+            print("Error trying to write picture to filesystem.")
+        #generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instructions)
+        #generate_html(i, recipe_title, ingredients_amount, ingredients_name, instructions)
         generate_md(i, recipe_title, ingredients_amount, ingredients_name, instructions)
 
 
