@@ -3,10 +3,12 @@ from pylatex import Document, Section, LongTabu, LargeText, VerticalSpace, Figur
 from pylatex.utils import bold
 from urllib.request import urlopen
 from pathlib import Path
+from lxml import etree
+import os
 
 
 def get_ingredients(parsed):
-    ingredients_table = parsed.find(class_="incredients")
+    ingredients_table = parsed.find(class_="ingredients")
     ingredients_amount = []
     ingredients_name = []
     for ingredient_row in ingredients_table:
@@ -35,10 +37,11 @@ def get_ingredients(parsed):
 
 
 def get_instructions(parsed):
-    instructions_html = parsed.find(id="rezept-zubereitung").strings
+    dom = etree.HTML(str(parsed))
+    instruction_html = dom.xpath('/html/body/main/article[4]/div[1]')[0]
     instruction_string = ""
-    for instructionHtml in instructions_html:
-        instruction_string += instructionHtml
+    for instructionHtml in instruction_html.itertext():
+        instruction_string += str(instructionHtml)
     instructions_split = instruction_string.split(chr(10))
     instructions = [x.lstrip() for x in instructions_split if not is_whitespace(x)]
     return instructions
@@ -102,6 +105,24 @@ def generate_html(i, recipe_title, ingredients_amount, ingredients_name, instruc
     file = open("recipes/" + recipe_title + ".html", "w")
     file.write(parsed.prettify())
 
+def generate_md(i, recipe_title, ingredients_amount, ingredients_name, instructions):
+    with open(os.path.join('recipes', f'{recipe_title.replace(" ","_")}.md'), 'w') as f:
+        content = f'# {recipe_title}\n\n'
+
+        content += '## Ingredients\n'
+        content += '| Menge | Zutat |\n'
+        content += '| ----- | ----- |\n'
+        for j, amount in enumerate(ingredients_amount):
+            while amount != amount.replace('  ', ' '):
+                amount = amount.replace('  ', ' ')
+            content += f'| {amount} | {ingredients_name[j]} |\n'
+
+        content += '\n## Instructions\n'
+        for instr in instructions:
+            content += f'- {instr}\n'
+        f.write(content)
+
+
 
 def little_do_it_all():
     with open("urls.txt") as f:
@@ -113,17 +134,18 @@ def little_do_it_all():
         parsed = BeautifulSoup(page, 'html.parser')
         ingredients_amount, ingredients_name = get_ingredients(parsed)
         instructions = get_instructions(parsed)
-        recipe_title = parsed.find(class_="page-title").string
-        picture_url = parsed.find(class_="slideshow-image").attrs['src']
-        picture_response = urlopen(picture_url)
-        picture = picture_response.read()
-        try:
-            with open("recipes/picture" + str(i) + ".jpg", "wb+") as f:
-                f.write(picture)
-        except OSError:
-            print("Error trying to write picture to filesystem.")
+        recipe_title = parsed.find("title").string
+        #picture_url = parsed.find(class_="slideshow-image").attrs['src']
+        #picture_response = urlopen(picture_url)
+        #picture = picture_response.read()
+        #try:
+        #    with open("recipes/picture" + str(i) + ".jpg", "wb+") as f:
+        #        f.write(picture)
+        #except OSError:
+        #    print("Error trying to write picture to filesystem.")
         generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instructions)
         generate_html(i, recipe_title, ingredients_amount, ingredients_name, instructions)
+        generate_md(i, recipe_title, ingredients_amount, ingredients_name, instructions)
 
 
 little_do_it_all()
