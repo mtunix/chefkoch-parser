@@ -1,10 +1,8 @@
-from bs4 import BeautifulSoup, Tag
-from pylatex import Document, Section, LongTabu, LargeText, VerticalSpace, Figure, Center, Command, MiniPage, LineBreak
-from pylatex.utils import bold
-from urllib.request import urlopen
-from pathlib import Path
-from lxml import etree
 import os
+from urllib.request import urlopen
+
+from bs4 import BeautifulSoup, Tag
+from lxml import etree
 
 
 def get_ingredients(parsed):
@@ -12,7 +10,9 @@ def get_ingredients(parsed):
     ingredients_amount = []
     ingredients_name = []
     for ingredient_row in ingredients_table:
-        if not isinstance(ingredient_row, Tag): continue
+        if not isinstance(ingredient_row, Tag):
+            continue
+
         columns = ingredient_row.find_all('td')
         for j, column in enumerate(columns):
             parsed_string = ""
@@ -37,7 +37,6 @@ def get_ingredients(parsed):
 
 
 def get_instructions(parsed):
-
     dom = etree.HTML(str(parsed))
     instruction_html = dom.xpath('/html/body/main/article[4]/div[1]')[0]
     instruction_string = ""
@@ -48,67 +47,12 @@ def get_instructions(parsed):
     return instructions
 
 
-def is_whitespace(str):
-    return len(str) == 0 or str.isspace()
-
-
-def generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instructions):
-    geometry_options = {
-        "head": "30pt",
-        "margin": "0.6in",
-        "bottom": "0.8in",
-    }
-    doc = Document(geometry_options=geometry_options)
-    doc.change_length("\parindent", "0pt")
-    doc.add_color("strongRed", "HTML", "f44242")
-    doc.add_color("lightRed", "HTML", "ffc1c1")
-    with doc.create(Center()):
-        doc.append(LargeText(bold(recipe_title)))
-    doc.append(VerticalSpace("0pt"))
-    doc.append(Command('small'))
-    with doc.create(LongTabu("X[l] X[3l]", row_height=1.5)) as ingredientTable:
-        ingredientTable.add_row(["Menge", "Zutat"], mapper=bold, color="strongRed")
-        ingredientTable.add_hline()
-        for j, ingredientAmount in enumerate(ingredients_amount):
-            row = [bold(ingredientAmount), bold(ingredients_name[j])]
-            if (j % 2) == 0:
-                ingredientTable.add_row(row, color="lightRed")
-            else:
-                ingredientTable.add_row(row)
-    doc.append(VerticalSpace("0pt"))
-    doc.append(Command('large'))
-    with doc.create(Section("Anweisungen", False)):
-        for instruction in instructions:
-            doc.append(instruction)
-    with doc.create(Figure(position="h")) as pic:
-        pic.add_image("picture" + str(i) + ".jpg", width="220px")
-    path = "recipes/" + recipe_title.replace(" ", "-")
-    print("Created:" + path + ".tex")
-    try:
-        doc.generate_tex(path)
-    except Exception:
-        pass
-
-
-def generate_html(i, recipe_title, ingredients_amount, ingredients_name, instructions):
-    contents = Path("template.html").read_text()
-    parsed = BeautifulSoup(contents, 'html.parser')
-    instructions_div = parsed.select("#instructions")[0]
-    table_body = parsed.select("#ingredients_body")[0]
-    parsed.select("#title")[0].append(recipe_title)
-    parsed.select("#image")[0].append(BeautifulSoup("<img width=\"100%\" src=\"picture" + \
-      str(i) + ".jpg\">", "html.parser"))
-    for j, ingredient_amount in enumerate(ingredients_amount):
-        table_body.append(BeautifulSoup("<tr><td>" + ingredient_amount \
-                                        + "</td><td>" + ingredients_name[j] + "</td></tr>", \
-                                        "html.parser"))
-    for instruction in instructions:
-        instructions_div.append(BeautifulSoup("<p>" + instruction + "</p>", "html.parser"))
-    file = open("recipes/" + recipe_title + ".html", "w")
-    file.write(parsed.prettify())
+def is_whitespace(string):
+    return len(string) == 0 or string.isspace()
 
 
 def generate_md(i, recipe_title, ingredients_amount, ingredients_name, instructions):
+    recipe_title = "".join(x for x in recipe_title if x.isalnum())
     with open(os.path.join('recipes', f'{recipe_title.replace(" ","_")}.md'), 'w') as f:
         content = f'# {recipe_title}\n\n'
         pic = "picture" + str(i) + ".jpg"
@@ -140,18 +84,17 @@ def little_do_it_all():
         instructions = get_instructions(parsed)
         recipe_title = parsed.find("title").string
         # TODO: FIX PICTURES
-        import sys
         dom = etree.HTML(str(parsed))
         picture_url = dom.xpath('//*[@id="i-amp-0"]/img/@src')[0]
         picture_response = urlopen(picture_url)
         picture = picture_response.read()
+
         try:
             with open("recipes/picture" + str(i) + ".jpg", "wb+") as f:
                 f.write(picture)
         except OSError:
             print("Error trying to write picture to filesystem.")
-        #generate_tex(i, recipe_title, ingredients_amount, ingredients_name, instructions)
-        #generate_html(i, recipe_title, ingredients_amount, ingredients_name, instructions)
+
         generate_md(i, recipe_title, ingredients_amount, ingredients_name, instructions)
 
 
